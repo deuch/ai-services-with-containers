@@ -1,4 +1,4 @@
-# AI Services containers on premise
+# AI Services containers on-premise
 
 ## Why ?
 
@@ -72,9 +72,9 @@ To install all of the components, you need to download some tools :
 [HELM](https://github.com/helm/helm/releases)  
 [LINKERD](https://github.com/linkerd/linkerd2/releases)  
 
-Those tools do not need installation, you can use them directly on the path, or add them to a standard path in your OS. **Choose the right binary depending of your desktop or using Azure Cloud Shell**
+Those tools do not need installation, you can use them directly on the path, or add them to a standard path in your OS. **Choose the right binary depending of your desktop or use Azure Cloud Shell**
 
-With Cloud Shell, **kubectl** and **helm** are already installed. You need **Linkerd** at least
+With Cloud Shell, **kubectl** and **helm** are already installed. You need **linkerd** at least
 
 You will need to rename the tools as kubectl(.exe), helm(.exe) and linkerd(.exe). If you are using cloudshell, kubectl and helm are already installed.  
 
