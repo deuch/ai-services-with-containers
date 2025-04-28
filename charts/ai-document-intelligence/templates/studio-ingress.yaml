@@ -1,0 +1,27 @@
+{{ if .Values.studio.enable }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/auth-url: "https://{{ include "global.fqdn" .}}/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://{{ include "global.fqdn" .}}/oauth2/start?rd=$escaped_request_uri" 
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+  name: {{ include "ai-document-intelligence.studioName" . }}
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+      - {{ include "global.fqdn" .}}
+    secretName: {{ .Values.ingress.tlsSecret }}
+  rules:
+  - host: "{{ include "global.fqdn" .}}"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "ai-document-intelligence.studioName" . }}
+            port:
+              number: {{ .Values.studio.port }}
+{{ end }}

@@ -1,0 +1,18 @@
+{{- if .Values.oidc.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.oidc.name }}
+  labels:
+    {{- include "ai-document-intelligence.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ .Values.oidc.name }}
+spec:
+  ports:
+  - name: http
+    port: {{ .Values.oidc.port }}
+    protocol: TCP
+    targetPort: {{ .Values.oidc.port }}
+  selector:
+    app.kubernetes.io/component: {{ .Values.oidc.name }}
+  type: ClusterIP
+{{- end }}

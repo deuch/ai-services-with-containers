@@ -1,0 +1,69 @@
+{{- if .Values.oauth2proxy.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: {{ .Values.oauth2proxy.name }}
+  name: {{ .Values.oauth2proxy.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: {{ .Values.oauth2proxy.name }}
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: {{ .Values.linkerd.injection }}
+      labels:
+        k8s-app: {{ .Values.oauth2proxy.name }}
+    spec:
+      containers:
+      - args:
+        - --provider={{ .Values.oauth2proxy.provider }}
+        # if using azure provide tenant id, other wise remove line below
+        - --oidc-issuer-url=https://{{ include "oidc.fqdn" .}} # replace with your OIDC IdP's issuer url
+        - --redirect-url=https://{{ include "global.fqdn" .}}/oauth2/callback
+        - --scope={{ .Values.oauth2proxy.scope }}
+        - --email-domain={{ .Values.oauth2proxy.emailDomain }}
+        - --upstream=static://200
+        - --http-address=0.0.0.0:4180
+        - --skip-jwt-bearer-tokens={{ .Values.oauth2proxy.skipJwt }}
+        - --extra-jwt-issuers=https://{{ include "oidc.fqdn" .}}=aiservices
+        - --insecure-oidc-allow-unverified-email=true
+        - --skip-claims-from-profile-url=true
+        - --skip-oidc-discovery=true
+        - --login-url=https://{{ include "oidc.fqdn" .}}/connect/authorize
+        - --redeem-url=https://{{ include "oidc.fqdn" .}}/connect/token
+        - --oidc-jwks-url=https://{{ include "oidc.fqdn" .}}/.well-known/jwks.json
+        - --profile-url=https://{{ include "oidc.fqdn" .}}/connect/userinfo
+        - --ssl-insecure-skip-verify=true
+        env:
+        - name: OAUTH2_PROXY_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.oauth2proxy.oauth2Secret.name }}
+              key: {{ .Values.oauth2proxy.oauth2Secret.clientIdKey }}
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.oauth2proxy.oauth2Secret.name }}
+              key: {{ .Values.oauth2proxy.oauth2Secret.clientSecretKey }}
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.oauth2proxy.oauth2Secret.name }}
+              key: {{ .Values.oauth2proxy.oauth2Secret.cookieSecretKey }}
+        image: {{ .Values.oauth2proxy.image }}
+        imagePullPolicy: Always
+        name: {{ .Values.oauth2proxy.name }}
+        ports:
+        - containerPort: 4180
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+{{- end }}

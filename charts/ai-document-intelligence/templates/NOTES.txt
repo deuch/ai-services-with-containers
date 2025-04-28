@@ -1,0 +1,52 @@
+To retrieve your username and secret:
+
+Powershell:
+
+For API:
+    clientId -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_CLIENT_ID}" oidc-secrets | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}
+    clientSecret -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_CLIENT_SECRET}" oidc-secrets | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}
+
+For Studio:
+    user -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_USER_NAME}" oidc-secrets | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}
+    password -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}
+
+Linux:
+
+For API:
+    clientId -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_CLIENT_ID}" oidc-secrets | base64 -d
+    clientSecret -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_CLIENT_SECRET}" oidc-secrets | base64 -d
+
+For Studio:
+    user -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_USER_NAME}" oidc-secrets | base64 -d
+    password -> kubectl get secrets -n {{ .Release.Namespace }} -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | base64 -d
+
+You can access to the studio with this FQDN: https://{{ include "global.fqdn" .}}
+
+{{- if get .Values "ingress-nginx.enable" }}
+Retrieve the IP of your ingress controller : kubectl get svc -n {{ .Release.Namespace }} {{ include "ingress-nginx.controller.fullname" (index .Subcharts "ingress-nginx") }} -o jsonpath="{.status.loadBalancer.ingress[]}"
+{{- end}}
+
+You can generate your .env file for python with those values :
+
+OAUTH2_CLIENT_ID=#OIDC_CLIENT_ID found above
+OAUTH2_CLIENT_SECRET=#OIDC_CLIENT_SECRET found above
+OAUTH2_CLIENT_SCOPE="openid email"
+OAUTH2_CLIENT_AUDIENCE="aiservices"
+OAUTH2_URL="https://{{ include "oidc.fqdn" .}}/connect/token"
+LAYOUT_ENDPOINT="https://{{ include "global.fqdn" .}}"
+
+For the specific API endpoints :
+
+{{ if .Values.layout.enable}}Active : {{ else}}Inactive: {{ end}}{{ template  "api.layout.fqdn" .}}
+{{ if .Values.read.enable}}Active : {{ else}}Inactive: {{ end}}{{ template "api.read.fqdn" .}}
+{{ if .Values.invoice.enable}}Active : {{ else}}Inactive: {{ end}}{{ template "api.invoice.fqdn" .}}
+{{ if .Values.receipt.enable}}Active : {{ else}}Inactive: {{ end}}{{ template "api.receipt.fqdn" .}}
+{{ if .Values.iddocument.enable}}Active : {{ else}}Inactive: {{ end}}{{ template "api.id.fqdn" .}}
+{{ if .Values.customTemplate.enable}}Active : {{ else}}Inactive: {{ end}}{{ template "api.customtemplate.fqdn" .}}
+
+
+
+
+
+
+

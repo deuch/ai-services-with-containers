@@ -1,0 +1,73 @@
+{{- if .Values.customTemplate.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-document-intelligence.customTemplateName" . }}
+  labels: 
+    {{ include "ai-document-intelligence.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "ai-document-intelligence.customTemplateName" . }}
+spec:
+  replicas: {{ .Values.customTemplate.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ include "ai-document-intelligence.customTemplateName" . }}
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: {{ .Values.linkerd.injection }}
+      labels: 
+        {{ include "ai-document-intelligence.labels" . | nindent 8 }}
+        app.kubernetes.io/component: {{ include "ai-document-intelligence.customTemplateName" . }}  
+    spec:
+      containers:
+        - image: {{ .Values.customTemplate.image }}
+          name: {{ include "ai-document-intelligence.customTemplateName" . }}
+          ports:
+            - containerPort: {{ .Values.customTemplate.port }}
+              protocol: TCP
+          env:
+            - name: billing
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.documentIntelligence.secret.name }}
+                  key: {{ .Values.documentIntelligence.secret.endpointKey }}
+            - name: apiKey
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.documentIntelligence.secret.name }}
+                  key: {{ .Values.documentIntelligence.secret.apiKey }} 
+            - name: eula
+              value: accept
+            - name: SharedRootFolder
+              value: {{ .Values.documentIntelligence.sharedRootFolder }}
+            - name: Mounts__Shared
+              value: {{ .Values.documentIntelligence.sharedRootFolder }}
+            - name: Mounts__Output
+              value: {{ .Values.documentIntelligence.outputFolder }}
+            - name: Logging__Console__LogLevel__Default
+              value: {{ .Values.documentIntelligence.logLevel }}
+            - name: AzureCognitiveServiceLayoutHost
+              value: {{ include "ai-document-intelligence.layoutHost" . }}
+          resources: {{ toYaml .Values.customTemplate.resources | nindent 12 }}
+          volumeMounts:
+            - name: shared
+              mountPath: {{ .Values.documentIntelligence.sharedRootFolder }}
+            - name: output
+              mountPath: {{ .Values.documentIntelligence.outputFolder }}
+      volumes:
+        - name: shared
+          persistentVolumeClaim:
+            claimName: {{ include "ai-document-intelligence.sharedVolumeName" . }}
+        - name: output
+          persistentVolumeClaim:
+            claimName: {{ include "ai-document-intelligence.outputVolumeName" . }}
+      {{- if .Values.customTemplate.tolerations }}
+      tolerations: {{ toYaml .Values.customTemplate.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.customTemplate.affinity }}
+      affinity: {{ toYaml .Values.customTemplate.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.customTemplate.nodeSelector }}
+      nodeSelector: {{ toYaml .Values.customTemplate.nodeSelector | nindent 8 }}
+      {{- end }}
+{{- end }}

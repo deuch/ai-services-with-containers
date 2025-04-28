@@ -1,0 +1,16 @@
+{{- if .Values.iddocument.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ai-document-intelligence.id-documentName" . }}
+  labels: 
+    {{ include "ai-document-intelligence.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "ai-document-intelligence.id-documentName" . }}
+spec:
+  ports:
+    - name: http
+      port: {{ .Values.iddocument.port }}
+      targetPort: {{ .Values.iddocument.port }}
+  selector:
+    app.kubernetes.io/component: {{ include "ai-document-intelligence.id-documentName" . }}
+{{- end }}

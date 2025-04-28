@@ -1,0 +1,28 @@
+{{- if .Values.oidc.enable }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/upstream-vhost: $host
+    nginx.ingress.kubernetes.io/proxy-body-size: 30m
+    nginx.ingress.kubernetes.io/use-regex: "true"
+  name: {{ .Values.oidc.name }}
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+      - {{ include "oidc.fqdn" .}}
+    secretName: {{ .Values.ingress.tlsSecret }}
+  rules:
+  - host: "{{ include "oidc.fqdn" .}}"
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ .Values.oidc.name }}
+            port:
+              number: {{ .Values.oidc.port }}
+{{- end }}

@@ -1,0 +1,55 @@
+{{- if .Values.oidc.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.oidc.name }}
+  labels:
+    {{ include "ai-document-intelligence.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ .Values.oidc.name }}
+spec:
+  replicas: {{ .Values.oidc.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ .Values.oidc.name }}
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: {{ .Values.linkerd.injection }}
+      labels:
+        {{ include "ai-document-intelligence.labels" . | nindent 8 }}
+        app.kubernetes.io/component: {{ .Values.oidc.name }}
+    spec:
+      containers:
+      - env:
+        - name: MINIOIDC_CONFIG
+          value: /config/configuration.yml
+        image: {{ .Values.oidc.image }}
+        imagePullPolicy: Always
+        name: {{ .Values.oidc.name }}
+        ports:
+        - containerPort: {{ .Values.oidc.port }}
+          protocol: TCP
+        resources: {{ toYaml .Values.oidc.resources | nindent 12 }}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /config/configuration.yml
+          name: mini-oidc-config
+          subPath: configuration.yml
+      volumes:
+        - name: mini-oidc-config
+          configMap:
+            name: mini-oidc-config
+            items:
+            - key: configuration.yml
+              path: configuration.yml
+      {{- if .Values.oidc.tolerations }}
+      tolerations: {{ toYaml .Values.oidc.tolerations | nindent 6 }}
+      {{- end }}
+      {{- if .Values.oidc.affinity }}
+      affinity: {{ toYaml .Values.oidc.affinity | nindent 6 }}
+      {{- end }}
+      {{- if .Values.oidc.nodeSelector }}
+      nodeSelector: {{ toYaml .Values.oidc.nodeSelector | nindent 6 }}
+      {{- end }}
+{{- end }}

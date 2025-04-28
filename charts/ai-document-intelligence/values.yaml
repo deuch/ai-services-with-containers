@@ -1,0 +1,465 @@
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Storage Class Name
+storageClassName: "di-azurefile"
+
+documentIntelligence:
+  # documentIntelligence.secret -- Secret to store api key and endpoint of document intelligence instance
+  # @section -- Global Document Intelligence Parameters
+  secret:
+    # documentIntelligence.secret.name -- Name of the K8S Secret to store api key and endpoint of document intelligence instance
+    # @section -- Global Document Intelligence Parameters
+    name: docintel-secret
+    # documentIntelligence.secret.apiKey -- Key Name to retrieve the apikey value in the secret
+    # @section -- Global Document Intelligence Parameters
+    apiKey: apiKey
+    # documentIntelligence.secret.endpointKey -- Key Name to retrieve the docintel endpoint value in the secret 
+    # @section -- Global Document Intelligence Parameters
+    endpointKey: endpoint
+
+  env: {}
+  # -- Studio folder path in the container
+  # @section -- Global Document Intelligence Parameters
+  studioFileFolder: "/onprem_folder"
+  # -- Studio database folder path in the container
+  # @section -- Global Document Intelligence Parameters
+  studioDatabaseFolder: "/onprem_db"
+  # -- Path to share datas between containers
+  # @section -- Global Document Intelligence Parameters
+  sharedRootFolder: "/share"
+  # -- Logs folder
+  # @section -- Global Document Intelligence Parameters
+  outputFolder: "/logs"
+  # -- To set the log level 'Debug, Information, Wargnin ...'
+  # @section -- Global Document Intelligence Parameters
+  logLevel: "Information"
+  studioFileVolume:
+    # -- Storage class name to use for the studio
+    # @section -- Global Document Intelligence Parameters
+    storageClassName: "di-azurefile"
+    # -- Default size of the volume
+    # @section -- Global Document Intelligence Parameters
+    capacity: "1Gi"
+    # -- Default Access Mode
+    # @section -- Global Document Intelligence Parameters
+    accessModes:
+      - ReadWriteMany
+    # -- Reclaim policy when deleting the volume
+    # @section -- Global Document Intelligence Parameters
+    reclaimPolicy: Delete
+    variables: {}  
+  studioDatabaseVolume:
+    # -- Storage class name to use for the studio DB
+    # @section -- Global Document Intelligence Parameters
+    storageClassName: "di-azurefile"
+    # -- Default size of the volume
+    # @section -- Global Document Intelligence Parameters
+    capacity: "1Gi"
+    # -- Default Access Mode
+    # @section -- Global Document Intelligence Parameters
+    accessModes:
+      - ReadWriteMany
+    # -- Reclaim policy when deleting the volume
+    # @section -- Global Document Intelligence Parameters
+    reclaimPolicy: Delete
+    variables: {}
+  sharedVolume:
+    # -- Storage class name to use for the shared folder
+    # @section -- Global Document Intelligence Parameters
+    storageClassName: "di-azurefile"
+    # -- Default size of the volume
+    # @section -- Global Document Intelligence Parameters
+    capacity: "1Gi"
+    # -- Default Access Mode
+    # @section -- Global Document Intelligence Parameters
+    accessModes:
+      - ReadWriteMany
+    # -- Reclaim policy when deleting the volume
+    # @section -- Global Document Intelligence Parameters
+    reclaimPolicy: Delete
+    variables: {}
+  outputVolume:
+    # -- Storage class for the output of the datas
+    # @section -- Global Document Intelligence Parameters
+    storageClassName: "di-azurefile"
+    # -- Default size of the volume
+    # @section -- Global Document Intelligence Parameters
+    capacity: "1Gi"
+    # -- Default Access Mode
+    # @section -- Global Document Intelligence Parameters
+    accessModes:
+      - ReadWriteMany
+    # -- Reclaim policy when deleting the volume
+    # @section -- Global Document Intelligence Parameters
+    reclaimPolicy: Delete
+    variables: {}
+
+ingress:
+  # ingress.tlsSecret -- Secret to store the HTTPS certificates
+  # @section -- Ingress domain and secret configuration
+  tlsSecret: tls-ingress-secret
+  # ingress.tlsDomain -- Domain used for all FQDN of the services
+  # @section -- Ingress domain and secret configuration
+  tlsDomain: "aiservices.com"
+  # ingress.autoGenerate -- Autogeneration of the HTTPS certificates with custom RootCA
+  # @section -- Ingress domain and secret configuration
+  autoGenerate: true
+  # ingress.existingSecret -- If using existing secret, please set the name. ingress.autoGenerate must be set to false
+  # @section -- Ingress domain and secret configuration
+  existingSecret:
+  # ingress.existingSecretNamespace -- If using existing secret, please set the namespace where the secret was created. A copy will be made. ingress.autoGenerate must be set to false
+  # @section -- Ingress domain and secret configuration
+  existingSecretNamespace:
+  # -- max payload for ingress controller (global)
+  # @section -- Ingress domain and secret configuration
+  maxPayloadSize: 32m
+  tls:
+    # ingress.tls.certificate -- If you provide your own certificate file , set the file name which hold the certificate. ingress.autoGenerate must be set to false
+    # @section -- Ingress domain and secret configuration
+    certificate:
+    # ingress.tls.key -- If you provide your own certificate file, set the file name which hold the key. ingress.autoGenerate must be set to false
+    # @section -- Ingress domain and secret configuration
+    key:
+
+linkerd:
+  # -- Enable linkerd sidecar injection
+  # @section -- Linkerd injection
+  injection: enabled
+
+ingress-nginx:
+  # ingress-nginx.enable -- Enable the installation of nginx ingress controller
+  # @section -- Configuration of the nginx ingress controller
+  enable: true
+  controller:
+    # ingress-nginx.controller.allowSnippetAnnotations -- Enable the usage of snippet in nginx configuration
+    # @section -- Configuration of the nginx ingress controller
+    allowSnippetAnnotations: "true"
+    # ingress-nginx.controller.config -- Add on to the nginx configmap. Use to modify the api answer to ensure https
+    # @section -- Configuration of the nginx ingress controller
+    config:
+       annotations-risk-level: Critical
+       map-hash-bucket-size: "128"
+       http-snippet: |
+         map $upstream_http_operation_location $m_replaceme {
+         "" "";
+         "~^http://(.*)$" "https://$1";
+         }
+    podAnnotations:
+      # ingress-nginx.controller.podAnnotations."linkerd.io/inject" -- Linkerd injection
+      # @section -- Configuration of the nginx ingress controller
+      linkerd.io/inject: enabled
+    service:
+      annotations:
+        # ingress-nginx.controller.service.annotations."service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path" -- Path for health check 
+        # @section -- Configuration of the nginx ingress controller
+        service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+        # ingress-nginx.controller.service.annotations."service.beta.kubernetes.io/azure-load-balancer-internal" -- Internal or External load balancer 
+        # @section -- Configuration of the nginx ingress controller
+        service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+
+oauth2proxy:
+  # -- Enable installation of oauth2proxy
+  # @section -- Oauth2-proxy configuration
+  enable: true
+  # -- Name of oauth2proxy deployment
+  # @section -- Oauth2-proxy configuration
+  name: oauth2-proxy
+  # oauth2proxy.image -- Repository and image name for oauth2 proxy
+  # @section -- Oauth2-proxy configuration
+  image: quay.io/oauth2-proxy/oauth2-proxy:latest
+  oauth2Secret:
+    # oauth2proxy.oauth2Secret.name -- Name of the kubernetes secret
+    # @section -- Oauth2-proxy configuration
+    name:  oauth2-proxy-secrets
+    # oauth2proxy.oauth2Secret.clientIdKey -- Name of the clientId key. You need to pass the value in command line
+    # @section -- Oauth2-proxy configuration
+    clientIdKey: OAUTH2_PROXY_CLIENT_ID
+    # oauth2proxy.oauth2Secret.clientSecretKey -- Name of the clientSecret key. You need to pass the value in command line
+    # @section -- Oauth2-proxy configuration
+    clientSecretKey: OAUTH2_PROXY_CLIENT_SECRET
+    # oauth2proxy.oauth2Secret.cookieSecretKey -- Name of the cookieSecret key. You need to pass the value in command line
+    # @section -- Oauth2-proxy configuration
+    cookieSecretKey: OAUTH2_PROXY_COOKIE_SECRET
+  # oauth2proxy.provider -- Set the provider type. OIDC by default
+  # @section -- Oauth2-proxy configuration
+  provider: "oidc"
+  # oauth2proxy.scope -- List of scope to check
+  # @section -- Oauth2-proxy configuration
+  scope: "openid profile email" #list of scopes
+  # -- Email domain to use (let to *)
+  # @section -- Oauth2-proxy configuration
+  emailDomain: "*"
+  # -- Use the bearer token in the request (for API calls)
+  # @section -- Oauth2-proxy configuration
+  skipJwt: "true"
+  # -- if an existing oauth2proxy instance exist, please use the associated FQDN. oauth2proxy.enable must be set to false
+  # @section -- Oauth2-proxy configuration
+  existingFqdn:
+
+
+oidc:
+  # -- mini-oidc deployment name
+  # @section -- mini-oidc configuration
+  name: mini-oidc
+  # -- Enable installation of mini-oidc
+  # @section -- mini-oidc configuration
+  enable: true
+  # -- mini-oidc image
+  # @section -- mini-oidc configuration
+  image: aiservicesprivate.azurecr.io/mini-oidc:1.0
+  # -- mini-oidc port
+  # @section -- mini-oidc configuration
+  port: 8000
+  # -- mini-oidc pods replicas
+  # @section -- mini-oidc configuration
+  replicaCount: 1
+  # -- username for the default user
+  # @section -- mini-oidc configuration
+  userName: user
+  resources:
+    limits:
+      # oidc.resources.limits.cpu -- CPU limits for mini-oidc deployment
+      # @section -- mini-oidc configuration
+      cpu: 1
+      # oidc.resources.limits.memory -- CPU limits for mini-oidc deployment
+      # @section -- mini-oidc configuration
+      memory: 1Gi
+    requests:
+      # oidc.resources.requests.cpu -- CPU requests for mini-oidc deployment
+      # @section -- mini-oidc configuration
+      cpu: 1
+      # oidc.resources.requests.memory -- CPU requests for mini-oidc deployment
+      # @section -- mini-oidc configuration
+      memory: 1Gi
+
+customTemplate:
+  # customTemplate.enable -- Enable custom template deployment
+  # @section -- Custom template model container
+  enable: false
+  # customTemplate.image -- Image for custom template deployment
+  # @section -- Custom template model container
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/custom-template-3.1:latest
+  # -- Port to listen
+  # @section -- Custom template model container
+  port: 5000
+  # customTemplate.replicaCount -- Number of replica for the pod
+  # @section -- Custom template model container
+  replicaCount: 1
+  resources:
+    limits:
+      # customTemplate.resources.limits.cpu -- CPU limits for custom template deployment
+      # @section -- Custom template model container
+      cpu: 8
+      # customTemplate.resources.limits.memory -- Memory limits for custom template deployment
+      # @section -- Custom template model container
+      memory: 24Gi
+    requests:
+      # customTemplate.resources.requests.cpu -- Cpu requests for custom template deployment
+      # @section -- Custom template model container
+      cpu: 4
+      # customTemplate.resources.requests.memory -- Memory requests for custom template deployment
+      # @section -- Custom template model container
+      memory: 8Gi
+  ingress:
+    # -- max payload for ingress controller
+    # @section -- Custom template model container
+    maxPayloadSize: 32m
+
+read:
+  # read.enable -- Enable iddocument template deployment
+  # @section -- Read model container
+  enable: true
+  # read.image -- Image for iddocument template deployment
+  # @section -- Read model container
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/read-3.1:latest
+  # -- Port to listen
+  # @section -- Read model container
+  port: 5000
+  # read.replicaCount -- Number of replica for the pod
+  # @section -- Read model container
+  replicaCount: 1
+  resources:
+    limits:
+      # read.resources.limits.cpu -- CPU limits for iddocument template deployment
+      # @section -- Read model container
+      cpu: 8
+      # read.resources.limits.memory -- Memory limits for iddocument template deployment
+      # @section -- Read model container
+      memory: 24Gi
+    requests:
+      # read.resources.requests.cpu -- Cpu requests for iddocument template deployment
+      # @section -- Read model container
+      cpu: 4
+      # read.resources.requests.memory -- Memory requests for iddocument template deployment
+      # @section -- Read model container
+      memory: 8Gi
+  ingress:
+    # -- max payload for ingress controller
+    # @section -- Read model container
+    maxPayloadSize: 32m
+
+layout:
+  # layout.enable -- Enable layout template deployment
+  # @section -- Layout model container
+  enable: true
+  # layout.image -- Image for layout template deployment
+  # @section -- Layout model container
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/layout-3.1:latest
+  # -- Port to listen
+  # @section -- Layout model container
+  port: 5000
+  # layout.replicaCount -- Number of replica for the pod
+  # @section -- Layout model container
+  replicaCount: 1
+  resources:
+    limits:
+      # layout.resources.limits.cpu -- CPU limits for layout template deployment
+      # @section -- Layout model container
+      cpu: 8
+      # layout.resources.limits.memory -- Memory limits for layout template deployment
+      # @section -- Layout model container
+      memory: 24Gi
+    requests:
+      # layout.resources.requests.cpu -- Cpu requests for layout template deployment
+      # @section -- Layout model container
+      cpu: 4
+      # layout.resources.requests.memory -- Memory requests for layout template deployment
+      # @section -- Layout model container
+      memory: 8Gi
+  ingress:
+    # -- max payload for ingress controller
+    # @section -- Layout model container
+    maxPayloadSize: 32m
+
+iddocument:
+  # iddocument.enable -- Enable iddocument template deployment
+  # @section -- ID Document model container
+  enable: true
+  # iddocument.image -- Image for iddocument template deployment
+  # @section -- ID Document model container
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/id-document-3.1:latest
+  # -- Port to listen
+  # @section -- ID Document model container
+  port: 5050
+  # iddocument.replicaCount -- Number of replica for the pod
+  # @section -- ID Document model container
+  replicaCount: 1
+  resources:
+    limits:
+      # iddocument.resources.limits.cpu -- CPU limits for iddocument template deployment
+      # @section -- ID Document model container
+      cpu: 8
+      # iddocument.resources.limits.memory -- Memory limits for iddocument template deployment
+      # @section -- ID Document model container
+      memory: 24Gi
+    requests:
+      # iddocument.resources.requests.cpu -- Cpu requests for iddocument template deployment
+      # @section -- ID Document model container
+      cpu: 4
+      # iddocument.resources.requests.memory -- Memory requests for iddocument template deployment
+      # @section -- ID Document model container
+      memory: 8Gi
+  ingress:
+    # -- max payload for ingress controller
+    # @section -- ID Document model container
+    maxPayloadSize: 32m
+
+invoice:
+  # invoice.enable -- Enable invoice template deployment
+  # @section -- Invoice model container
+  enable: false
+  # invoice.image -- Image for invoice template deployment
+  # @section -- Invoice model container
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/invoice-3.1:latest
+  # -- Port to listen
+  # @section -- Invoice model container
+  port: 5050
+  # invoice.replicaCount -- Number of replica for the pod
+  # @section -- Invoice model container
+  replicaCount: 1
+  resources:
+    limits:
+      # invoice.resources.limits.cpu -- CPU limits for invoice template deployment
+      # @section -- Invoice model container
+      cpu: 8
+      # invoice.resources.limits.memory -- Memory limits for invoice template deployment
+      # @section -- Invoice model container
+      memory: 24Gi
+    requests:
+      # invoice.resources.requests.cpu -- Cpu requests for invoice template deployment
+      # @section -- Invoice model container
+      cpu: 4
+      # invoice.resources.requests.memory -- Memory requests for invoice template deployment
+      # @section -- Invoice model container
+      memory: 8Gi
+  ingress:
+    # -- max payload for ingress controller
+    # @section -- Invoice model container
+    maxPayloadSize: 32m
+
+receipt:
+  # receipt.enable -- Enable receipt template deployment
+  # @section -- Receipt model container
+  enable: true
+  # receipt.image -- Image for receipt template deployment
+  # @section -- Receipt model container
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/receipt-3.1:latest
+  # receipt.port -- Port to listen
+  # @section -- Receipt model container
+  port: 5050
+  # receipt.replicaCount -- Number of replica for the pod
+  # @section -- Receipt model container
+  replicaCount: 1
+  resources:
+    limits:
+      # receipt.resources.limits.cpu -- CPU limits for receipt template deployment
+      # @section -- Receipt model container
+      cpu: 8
+      # receipt.resources.limits.memory -- Memory limits for receipt template deployment
+      # @section -- Receipt model container
+      memory: 24Gi
+    requests:
+      # receipt.resources.requests.cpu -- Cpu requests for receipt template deployment
+      # @section -- Receipt model container
+      cpu: 4
+      # receipt.resources.requests.memory -- Memory requests for receipt template deployment
+      # @section -- Receipt model container
+      memory: 8Gi
+  ingress:
+    # receipt.ingress.maxPayloadSize -- max payload for ingress controller
+    # @section -- Receipt model container
+    maxPayloadSize: 32m
+
+studio:
+  # -- Enable studio template deployment
+  # @section -- Studio container
+  enable: true
+  # -- Image for studio template deployment
+  # @section -- Studio container
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/studio-3.1:latest
+  # -- Port to listen
+  # @section -- Studio container
+  port: 5001
+  # studio.replicaCount -- Number of replica for the pod
+  # @section -- Studio container
+  replicaCount: 1
+  resources:
+    limits:
+      # studio.resources.limits.cpu -- CPU limits for studio template deployment
+      # @section -- Studio container
+      cpu: 4
+      # studio.resources.limits.memory -- Memory limits for studio template deployment
+      # @section -- Studio container
+      memory: 8Gi
+    requests:
+      # studio.resources.requests.cpu -- Cpu requests for studio template deployment
+      # @section -- Studio container
+      cpu: 2
+      # studio.resources.requests.memory -- Memory requests for studio template deployment
+      # @section -- Studio container
+      memory: 4Gi
+  ingress:
+    # -- max payload for ingress controller
+    # @section -- Studio container
+    maxPayloadSize: 32m

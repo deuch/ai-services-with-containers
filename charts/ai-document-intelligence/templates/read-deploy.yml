@@ -1,0 +1,72 @@
+{{- if .Values.read.enable }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-document-intelligence.readName" . }}
+  labels: 
+    {{ include "ai-document-intelligence.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "ai-document-intelligence.readName" . }}
+spec:
+  replicas: {{ .Values.read.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: {{ include "ai-document-intelligence.readName" . }}
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: {{ .Values.linkerd.injection }}
+      labels: 
+        {{ include "ai-document-intelligence.labels" . | nindent 8 }}
+        app.kubernetes.io/component: {{ include "ai-document-intelligence.readName" . }}  
+    spec:
+      containers:
+        - image: {{ .Values.read.image }}
+          name: {{ include "ai-document-intelligence.readName" . }}
+          ports:
+            - containerPort: {{ .Values.read.port }}
+              protocol: TCP
+          env:
+            - name: billing
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.documentIntelligence.secret.name }}
+                  key: {{ .Values.documentIntelligence.secret.endpointKey }}
+            - name: apiKey
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.documentIntelligence.secret.name }}
+                  key: {{ .Values.documentIntelligence.secret.apiKey }}  
+            - name: eula
+              value: accept
+            - name: SharedRootFolder
+              value: {{ .Values.documentIntelligence.sharedRootFolder }}
+            - name: Mounts__Shared
+              value: {{ .Values.documentIntelligence.sharedRootFolder }}
+            - name: Mounts__Output
+              value: {{ .Values.documentIntelligence.outputFolder }}
+            - name: Logging__Console__LogLevel__Default
+              value: {{ .Values.documentIntelligence.logLevel }}
+          resources: {{ toYaml .Values.read.resources | nindent 12 }}
+          volumeMounts:
+            - name: shared
+              mountPath: {{ .Values.documentIntelligence.sharedRootFolder }}
+            - name: output
+              mountPath: {{ .Values.documentIntelligence.outputFolder }}
+      volumes:
+        - name: shared
+          persistentVolumeClaim:
+            claimName: {{ include "ai-document-intelligence.sharedVolumeName" . }}
+        - name: output
+          persistentVolumeClaim:
+            claimName: {{ include "ai-document-intelligence.outputVolumeName" . }}
+      {{- if .Values.read.tolerations }}
+      tolerations: {{ toYaml .Values.read.tolerations | nindent 6 }}
+      {{- end }}
+      {{- if .Values.read.affinity }}
+      affinity: {{ toYaml .Values.read.affinity | nindent 6 }}
+      {{- end }}
+      {{- if .Values.read.nodeSelector }}
+      nodeSelector: {{ toYaml .Values.read.nodeSelector | nindent 6 }}
+      {{- end }}
+{{- end }}
+

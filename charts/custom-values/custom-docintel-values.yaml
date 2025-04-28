@@ -1,0 +1,143 @@
+nameOverride: ""
+fullnameOverride: ""
+
+storageClassName: "di-azurefile"
+
+documentIntelligence:
+  secret:
+    name: docintel-secret
+    apiKey: apiKey
+    endpointKey: endpoint
+
+ingress:
+  tlsSecret: tls-ingress-secret
+  tlsDomain: "aiservices.intra"
+  autoGenerate: true
+  existingSecret: tls-ingress-secret
+  existingSecretNamespace:
+  maxPayloadSize: 32m
+
+linkerd:
+  injection: enabled
+
+ingress-nginx:
+  enable: true
+  controller:
+    service:
+      annotations:
+        service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+        service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+
+oauth2proxy:
+  enable: true
+  name: oauth2-proxy
+  image: quay.io/oauth2-proxy/oauth2-proxy:latest
+  existingFqdn:
+
+oidc:
+  enable: true
+  name: mini-oidc
+  image: aiservicesprivate.azurecr.io/mini-oidc:1.0
+  port: 8000
+  replicaCount: 1
+  userName: user
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 1
+      memory: 1Gi
+
+customTemplate:
+  enable: false
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/custom-template-3.1:latest
+  port: 5000
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 8
+      memory: 24Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+
+layout:
+  enable: true
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/layout-3.1:latest
+  port: 5000
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 8
+      memory: 24Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+
+read:
+  enable: true
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/read-3.1:latest
+  port: 5000
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 8
+      memory: 24Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+
+iddocument:
+  enable: true
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/id-document-3.1:latest
+  port: 5050
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 8
+      memory: 24Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+
+invoice:
+  enable: true
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/invoice-3.1:latest
+  port: 5050
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 8
+      memory: 24Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+
+receipt:
+  enable: true
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/receipt-3.1:latest
+  port: 5050
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 8
+      memory: 24Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+
+studio:
+  enable: true
+  image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/studio:3.1
+  port: 5001
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 4
+      memory: 8Gi
+    requests:
+      cpu: 2
+      memory: 4Gi
+
+

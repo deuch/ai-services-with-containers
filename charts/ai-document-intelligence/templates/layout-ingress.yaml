@@ -1,0 +1,55 @@
+{{- if .Values.layout.enable }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/auth-url: "https://{{ include "oauth2.fqdn" .}}/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://{{ include "oauth2.fqdn" .}}/oauth2/start?rd=$escaped_request_uri" 
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+    nginx.ingress.kubernetes.io/upstream-vhost: $host
+    nginx.ingress.kubernetes.io/proxy-body-size: 30m
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "*"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "cache-control,content-type,ocp-apim-subscription-key,x-ms-useragent"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_hide_header operation-location;
+      add_header operation-location "$m_replaceme" always;
+    nginx.ingress.kubernetes.io/auth-snippet: |
+      if ( $request_uri !~ "^/formrecognizer/(.*)$" ) {
+        return 200;
+      }    
+  name: {{ include "ai-document-intelligence.layoutName" . }}
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+      - {{ include "global.fqdn" .}}
+      - {{ include "api.layout.fqdn" .}}
+    secretName: {{ .Values.ingress.tlsSecret }}
+  rules:
+  - host: "{{ include "global.fqdn" .}}"
+    http:
+      paths:
+      - path: /formrecognizer/documentModels/prebuilt-layout(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "ai-document-intelligence.layoutName" . }}
+            port:
+              number: {{ .Values.layout.port }}
+  - host: "{{ include "api.layout.fqdn" .}}"
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: {{ include "ai-document-intelligence.layoutName" . }}
+            port:
+              number: {{ .Values.layout.port }}
+{{- end }}

@@ -1,0 +1,16 @@
+{{- if .Values.read.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ai-document-intelligence.readName" . }}
+  labels: 
+    {{- include "ai-document-intelligence.labels" . | nindent 4 }}
+    app.kubernetes.io/component: {{ include "ai-document-intelligence.readName" . }}
+spec:
+  ports:
+    - name: http
+      port: {{ .Values.read.port }}
+      targetPort: {{ .Values.read.port }}
+  selector:
+    app.kubernetes.io/component: {{ include "ai-document-intelligence.readName" . }}
+{{- end }}

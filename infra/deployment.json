@@ -1,0 +1,322 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vnetName": {
+      "type": "string"
+    },
+    "vnetAddressSpace": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16"
+    },
+    "docIntelligenceName": {
+      "type": "string"
+    },
+    "aksClusterName": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string",
+      "defaultValue": "adminuser"
+    },
+    "adminPassword": {
+      "type": "secureString"
+    },
+    "privateDnsZoneName": {
+      "type": "string",
+      "defaultValue": "aiservices.intra",
+      "metadata": {
+        "description": "Name of the first private DNS zone."
+      }
+    },
+    "systemNodePoolSku": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v5",
+      "metadata": {
+        "description": "The VM SKU for the system node pool (D-series v5 or v6 with 2 vCPUs)"
+      },
+      "allowedValues": [
+        "Standard_D2s_v5",
+        "Standard_D2as_v5",
+        "Standard_D2s_v6",
+        "Standard_D2as_v6"
+      ]
+    },
+    "userNodePoolSku": {
+      "type": "string",
+      "defaultValue": "Standard_D8s_v5",
+      "metadata": {
+        "description": "The VM SKU for the user node pool (D-series v5 or v6 with 8 vCPUs)"
+      },
+      "allowedValues": [
+        "Standard_D8s_v5",
+        "Standard_D8as_v5",
+        "Standard_D8s_v6",
+        "Standard_D8as_v6"
+      ]
+    }
+  },
+  "variables": {
+    "aksSubnetCidr": "[cidrSubnet(parameters('vnetAddressSpace'), 24, 0)]",
+    "vmsSubnetCidr": "[cidrSubnet(parameters('vnetAddressSpace'), 27, 8)]",
+    "peSubnetCidr": "[cidrSubnet(parameters('vnetAddressSpace'), 27, 9)]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2021-05-01",
+      "name": "[parameters('vnetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": ["[parameters('vnetAddressSpace')]"]
+        },
+        "subnets": [
+          {
+            "name": "aks",
+            "properties": {
+              "addressPrefix": "[variables('aksSubnetCidr')]"
+            }
+          },
+          {
+            "name": "vms",
+            "properties": {
+              "addressPrefix": "[variables('vmsSubnetCidr')]"
+            }
+          },
+          {
+            "name": "pe",
+            "properties": {
+              "addressPrefix": "[variables('peSubnetCidr')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "[parameters('privateDnsZoneName')]",
+      "location": "global"
+
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2024-06-01",
+      "name": "cognitiveservices.azure.com",
+      "location": "global"
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2020-06-01",
+      "name": "[concat(parameters('privateDnsZoneName'), '/vnetLink')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', parameters('privateDnsZoneName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+      ],
+      "location": "global",
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        },
+        "registrationEnabled": false
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2020-06-01",
+      "name": "cognitiveservices.azure.com/vnetLink",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'cognitiveservices.azure.com')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+      ],
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        },
+        "registrationEnabled": false
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "2021-07-01",
+      "name": "vm1",
+      "location": "[resourceGroup().location]",
+       "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', 'vm1-nic')]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_B4ms"
+        },
+        "osProfile": {
+          "computerName": "vm1",
+          "adminUsername": "[parameters('adminUsername')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "MicrosoftWindowsDesktop",
+            "offer": "Windows-10",
+            "sku": "win10-21h2-pro",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'vm1-nic')]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "2021-05-01",
+      "name": "vm1-nic",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'vms')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2021-04-30",
+      "name": "[parameters('docIntelligenceName')]",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "S0"
+      },
+      "kind": "FormRecognizer",
+      "properties": {
+        "publicNetworkAccess": "Disabled",
+        "customSubDomainName" : "[parameters('docIntelligenceName')]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2021-05-01",
+      "name": "docIntelligence-pe",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', parameters('docIntelligenceName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'cognitiveservices.azure.com')]"
+      ],
+      "properties": {
+        "subnet": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'pe')]"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "docIntelligenceConnection",
+            "properties": {
+              "privateLinkServiceId": "[resourceId('Microsoft.CognitiveServices/accounts', parameters('docIntelligenceName'))]",
+              "groupIds": ["account"]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2021-05-01",
+      "name": "docIntelligence-pe/default",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', 'docIntelligence-pe')]",
+        "[resourceId('Microsoft.Network/privateDnsZones', 'cognitiveservices.azure.com')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "cognitive-services-config",
+            "properties": {
+              "privateDnsZoneId": "[resourceId('Microsoft.Network/privateDnsZones', 'cognitiveservices.azure.com')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.ContainerService/managedClusters",
+      "apiVersion": "2023-08-01",
+      "name": "[parameters('aksClusterName')]",
+      "location": "[resourceGroup().location]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+    
+      "properties": {
+        "dnsPrefix": "aksdns",
+        "networkProfile": {
+          "networkPlugin": "azure",
+          "networkPluginMode": "overlay",
+          "networkPolicy": "calico",
+          "podCidr": "10.244.0.0/16",
+          "serviceCidr": "10.2.0.0/24",
+          "dnsServiceIP": "10.2.0.10"
+        },
+        "agentPoolProfiles": [
+          {
+            "name": "system",
+            "mode": "System",
+            "count": 3,
+            "vmSize": "[parameters('systemNodePoolSku')]",
+            "osType": "Linux",
+            "enableAutoScaling": false,
+            "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'aks')]"
+          },
+          {
+            "name": "userpool",
+            "mode": "User",
+            "count": 1,
+            "vmSize": "[parameters('userNodePoolSku')]",
+            "osType": "Linux",
+            "enableAutoScaling": true,
+            "minCount": 5,
+            "maxCount": 8,
+            "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'aks')]"
+          }
+        ],
+         "servicePrincipalProfile": {
+          "clientId": "msi"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "name": "[guid(resourceGroup().id, parameters('aksClusterName'), 'NetworkContributor')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+      ],
+      "properties": {
+        "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '4d97b98b-1d4f-4787-a291-c67834d212e7')]",
+        "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName')), '2023-08-01', 'Full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      }
+    }
+  ]
+}
+
+

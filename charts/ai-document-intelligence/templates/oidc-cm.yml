@@ -1,0 +1,88 @@
+{{- $clientSecret:= randAlphaNum 16 }}
+{{- $userSecret:= randAlphaNum 12 }}
+{{- $clientId:= uuidv4 }}
+{{- if .Values.oidc.enable }}
+{{- $cm:= lookup "v1" "ConfigMap" .Release.Namespace (printf "%s%s" .Values.oidc.name "-config") }}
+{{- if empty $cm  }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.oidc.name }}-config
+data:
+  configuration.yml: |
+    issuer: https://{{ include "oidc.fqdn" .}}
+    audience: aiservices
+    middlewares:
+      log_requests: true
+    clients:
+      - id: {{ $clientId }}
+        secret_hash: {{ trimPrefix ":" ( htpasswd "" $clientSecret) }} # secret
+        redirect_uris:
+         - https://{{ include "global.fqdn" .}}/oauth2/callback
+    users:
+      - subject: 1
+        email: use@mail.com
+        email_verified: true
+        preferred_username: {{ .Values.oidc.userName }}
+        password_hash: {{ trimPrefix ":" ( htpasswd "" $userSecret) }} # password
+{{- else }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.oidc.name }}-config
+data:
+  configuration.yml: {{ get $cm.data "configuration.yml" |quote}}  
+{{- end }}
+{{- end }}
+---
+{{- if .Values.oauth2proxy.enable }}
+{{- $oauthSecret:= lookup "v1" "Secret" .Release.Namespace "oauth2-proxy-secrets" }}
+{{- if empty $oauthSecret}}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: oauth2-proxy-secrets
+data:
+  OAUTH2_PROXY_CLIENT_ID: {{ $clientId | b64enc }}
+  OAUTH2_PROXY_CLIENT_SECRET: {{ $clientSecret | b64enc }}
+  OAUTH2_PROXY_COOKIE_SECRET: {{ randBytes 32 | replace "+" "-" | replace "/" "_" | b64enc }}
+type: Opaque
+{{- else }}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: oauth2-proxy-secrets
+data:
+  OAUTH2_PROXY_CLIENT_ID: {{ $oauthSecret.data.OAUTH2_PROXY_CLIENT_ID }}
+  OAUTH2_PROXY_CLIENT_SECRET: {{ $oauthSecret.data.OAUTH2_PROXY_CLIENT_SECRET }}
+  OAUTH2_PROXY_COOKIE_SECRET: {{ $oauthSecret.data.OAUTH2_PROXY_COOKIE_SECRET }}
+type: Opaque
+{{- end }}
+{{- end }}
+---
+{{- if .Values.oidc.enable }}
+{{- $oidcSecret:= lookup "v1" "Secret" .Release.Namespace "oidc-secrets" }}
+{{- if empty $oidcSecret }}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: oidc-secrets
+data:
+  OIDC_CLIENT_ID: {{ $clientId | b64enc }}
+  OIDC_CLIENT_SECRET: {{ $clientSecret | b64enc }}
+  OIDC_USER_NAME: {{ .Values.oidc.userName | b64enc }}
+  OIDC_USER_SECRET: {{ $userSecret | b64enc }}
+type: Opaque
+{{- else}}
+kind: Secret
+apiVersion: v1
+metadata:
+  name: oidc-secrets
+data:
+  OIDC_CLIENT_ID: {{ $oidcSecret.data.OIDC_CLIENT_ID }}
+  OIDC_CLIENT_SECRET: {{ $oidcSecret.data.OIDC_CLIENT_SECRET }}
+  OIDC_USER_NAME: {{ $oidcSecret.data.OIDC_USER_NAME }}
+  OIDC_USER_SECRET: {{ $oidcSecret.data.OIDC_USER_SECRET }}
+type: Opaque
+{{- end }}
+{{- end }}

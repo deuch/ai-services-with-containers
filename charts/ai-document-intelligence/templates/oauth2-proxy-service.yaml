@@ -1,0 +1,16 @@
+{{- if .Values.oauth2proxy.enable }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: {{ .Values.oauth2proxy.name }}
+  name: {{ .Values.oauth2proxy.name }}
+spec:
+  ports:
+  - name: http
+    port: 4180
+    protocol: TCP
+    targetPort: 4180
+  selector:
+    k8s-app: {{ .Values.oauth2proxy.name }}
+{{- end }}    
