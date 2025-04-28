@@ -261,7 +261,7 @@ Launch mmc
 
 Add a snap-in  
 
-![Add a snap-in](./img/install-certificate-06.png "Add a snap-in")
+![Add a snap-in](../img/install-certificate-06.png "Add a snap-in")
 
 Choose Certificates and click "Add"  
 
