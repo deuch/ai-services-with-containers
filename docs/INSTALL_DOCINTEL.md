@@ -135,6 +135,7 @@ Linux :
 ```bash
 aiaccount_name=docintelprivate
 pe_ai=pe-docintel
+
 az cognitiveservices account create -n $aiaccount_name -g $rg_name --kind FormRecognizer --sku S0 -l $location --yes --custom-domain $aiaccount_name
 resourceId=$(az cognitiveservices account show --resource-group $rg_name --name $aiaccount_name --query id --output tsv)
 az resource update --ids $resourceId  --set properties.networkAcls="{'defaultAction':'Deny'}"
@@ -285,6 +286,7 @@ Let now install the Document Intelligence Helm chart :
 2) In the below command, set :
   - *documentIntelligence.secret.apiKeyValue* with your apiKey
   - *documentIntelligence.secret.endpointValue* with your Document Intelligence endpoint
+3) Everything will be installed in the **di** namespace
 
 ```bash
 helm install di .\ai-document-intelligence -f .\custom-values\custom-docintel-values.yaml -n di --create-namespace --set documentIntelligence.secret.apiKeyValue="XXXXXXXXXXXXXXXX",documentIntelligence.secret.endpointValue="https://mydocintelinstance.cognitiveservices.azure.com/"
@@ -312,10 +314,20 @@ oauth2-proxy                                  ClusterIP      10.4.0.18    <none>
 
 In this example, you need to use the external-ip of the Loadbalancer -> 10.0.0.12
 
+Linux :
+
 ```bash
 private_ip="10.0.0.12"
 az network private-dns record-set a add-record -g $rg_name -z $domain -n "*" -a $private_ip
 ```
+
+Windows :
+
+```powershell
+$private_ip="10.0.0.12"
+az network private-dns record-set a add-record -g $rg_name -z $domain -n "*" -a $private_ip
+```
+
 You can add the record directly in the portal too. Use "*" as name and the IP of the load balancer.  
 
 ### Connect to the studio
@@ -336,13 +348,13 @@ NAME                                      CLASS   HOSTS                         
 di-ai-document-intelligence-studio        nginx   docintel.aiservices.intra                                10.0.0.12   80, 443   6m26s
 ```
 
-To login, use :
+To login to the studio, use :
   - Username : user
   - Password : the OIDC_USER_SECRET
 
 To retrieve it with Windows :
 
-```console
+```powershell
 kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}
 ```
 
@@ -357,6 +369,8 @@ kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | 
 in the [Tools](../tools) directory, you will find some scripts to help you to generate and retrieve all the informations of your deployment (assume **di** is your namespace as set by default): 
 
 **You need to have kubectl installed as the script will use it to retrieve all the informations**  
+
+**Only available for windows for now**
 
 ```shell
 .\getconfig.ps1 di

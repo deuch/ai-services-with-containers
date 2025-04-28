@@ -2,14 +2,14 @@
 
 ## Why ?
 
-Ai Services on containers from Azure are a way to use prebuilt model on premise without sending datas to Azure.
+Ai Services on containers from Azure are a way to use prebuilt models on premise without sending datas to Azure.
 
 ## How it works ?
 
 ### Components
 
 Containers are deployed in a Kubernetes cluster and this repo will help you to deploy them in a secure way.  
-By default you can not use HTTPS with certificate and no authentication is provided.  
+By default you can not use HTTPS with certificates and no authentication is provided with the containers.  
 The user need to handle both of those security aspects.
 
 ### Architecture and related security
@@ -20,14 +20,15 @@ This is an example with Document Intelligence Containers.
 
 **Nginx** ingress controller will route the requests to the different backends [Nginx documentation](https://github.com/kubernetes/ingress-nginx)
 
-**Linkerd** provide transport security with MTLS between components. [Linkerd documentation](https://linkerd.io/)
+**Linkerd** provide transport security with mTLS between components. [Linkerd documentation](https://linkerd.io/)
 
 **Mini-oidc** provide authentication (OIDC/Oauth2) [minioidc documentation](https://github.com/fernandoescolar/minioidc)
-  - 2 users are created, one for API consumption and one for human user  
+  - 2 users are created with generated passwords, one for API consumption and one for human user
+  - Provide a lgin page for the UI
 
-**Oauth2-proxy** act as proxy to forward authentication to mini-oidc [OAuth2 Proxy documentation](https://oauth2-proxy.github.io/oauth2-proxy/)
+**Oauth2-proxy** act as a proxy to forward authentication requests to mini-oidc [OAuth2 Proxy documentation](https://oauth2-proxy.github.io/oauth2-proxy/)
 
-File share is used to share datas for asynchronous call or logging or License consumption
+File share is used to share datas for asynchronous calls, logging or License consumption.
 
 ## Available charts
 
@@ -65,7 +66,7 @@ Languages :
 
 ### Tools
 
-To install all of the component, you need to download some tools :
+To install all of the components, you need to download some tools :
 
 [KUBECTL](https://kubernetes.io/releases/download/#binaries)  
 [HELM](https://github.com/helm/helm/releases)  
@@ -81,4 +82,4 @@ You will need to rename the tools as kubectl(.exe), helm(.exe) and linkerd(.exe)
 
 For simplification, you can use North Europe to install your azure resources (Free Bastion with developper SKU)
 
-You can deploy everything directly with the ARM template or follow the manual instruction in each [specific containers documentation](./docs/)
+You can deploy everything directly with the ARM template or follow the manual instructions in each [specific containers documentation](./docs/)
