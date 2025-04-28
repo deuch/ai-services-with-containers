@@ -4,6 +4,7 @@ $namespace = $args[0]
 $secretName = "oidc-secrets"
 $certificateName = "tls-ingress-secret"
 $configMapName="mini-oidc-config"
+$apiEndpointCm="api-endpoints"
 $outputFile = ".env"
 
 # Récupérer le secret en format JSON
@@ -21,11 +22,16 @@ foreach ($key in $secretObject.data.PSObject.Properties.Name) {
   $envContent += "$key=$value`n"
 }
 
-$configMapObject =  kubectl get cm api-endpoints -n di -o jsonpath="{.data.endpoints}" 
+$configMapJson =  kubectl get cm $apiEndpointCm -n $namespace -o json 
+$configMapObject = $configMapJson | ConvertFrom-Json
+
+foreach ($key in $configMapObject.data.PSObject.Properties.Name) {
+  $value = $configMapObject.data.$key
+  $envContent += "$key=$value`n"
+}
 
 # Sauvegarder le contenu dans le fichier .env
 $envContent | Out-File -FilePath $outputFile -Encoding utf8
-$configMapObject | Out-File -FilePath $outputFile -Encoding utf8 -Append
 
 Write-Output $envContent
 Write-Output "Content save to $outputFile"

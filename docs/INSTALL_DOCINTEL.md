@@ -212,6 +212,8 @@ helm install di .\ai-document-intelligence -f .\custom-values\custom-docintel-va
 
 ### Private DNS Zone A Record
 
+**You need to add a record in your Private DNS Zone. Unless, you will not be able to use your VM and reach the studio.**  
+
 Retrieve the private IP of the Load Balancer :
 
 ```console
@@ -234,14 +236,62 @@ In this example, you need to use the external-ip of the Loadbalancer -> 10.0.0.1
 private_ip="10.0.0.12"
 az network private-dns record-set a add-record -g $rg_name -z $domain -n "*" -a $private_ip
 ```
+You can add the record directly in the portal too. Use "*" as name and the IP of the load balancer.  
+
+### Connect to the studio
+
+In your VM, use a browser and reach the FQDN of your studio deployment.
+The FQDN is returned after the helm installation.  
+
+To retrieve it : 
+
+```console
+kubectl get ing -n di
+```
+
+Check the HOSTS associated to the studio ingress :  
+
+```console
+NAME                                      CLASS   HOSTS                                                    ADDRESS     PORTS     AGE
+di-ai-document-intelligence-studio        nginx   docintel.aiservices.intra                                10.0.0.12   80, 443   6m26s
+```
+
+To login, use :
+  - Username : user
+  - Password : the OIDC_USER_SECRET
+
+To retrieve it with Windows :
+
+```console
+kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}
+```
+
+With Linux : 
+
+```console
+kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | base64 -d
+```
+
+### Generate config for your python code
+
+in the [Tools](../tools) directory, you will find some scripts to help you to generate and retrieve all the informations of your deployment (assume **di** is your namespace as set by default): 
+
+**You need to have kubectl installed as the script will use it to retrieve all the informations**  
+
+```shell
+.\getconfig.ps1 di
+```
+It will generate an *.env* file with all the informations you need to use with python for example.  
 
 ### Install certificates in the VM
+
+With auto generated certificates, your browser will show you some warnings about non trusted certificates. Follow this guide to install the certificates in your windows desktop :  
 
 Certificates are not Trusted :  
 
 ![Certificate is not Trusted](../img/install-certificate-01.png "Certificate is not Trusted")
 
-Check information about the certificate :  
+Check informations about the certificate :  
 
 ![Retrieve the certificate](../img/install-certificate-02.png "Retrieve the certificate")
 

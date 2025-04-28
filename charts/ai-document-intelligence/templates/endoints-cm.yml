@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-endpoints
+data:
+  LAYOUT_ENDPOINT: "https://{{ template  "api.layout.fqdn" .}}"
+  READ_ENDPOINT: "https://{{ template "api.read.fqdn" .}}"
+  INVOICE_ENDPOINT: "https://{{ template "api.invoice.fqdn" .}}"
+  RECEIPT_ENDPOINT: "https://{{ template "api.receipt.fqdn" .}}"
+  IDDOCUMENT_ENDPOINT: "https://{{ template "api.id.fqdn" .}}"
+  CUSTOM_ENDPOINT: "https://{{ template "api.customtemplate.fqdn" .}}"
+  SSL_VERIFY: "false"
