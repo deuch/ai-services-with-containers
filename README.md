@@ -73,10 +73,12 @@ To install all of the component, you need to download some tools :
 
 Those tools do not need installation, you can use them directly on the path, or add them to a standard path in your OS. **Choose the right binary depending of your desktop or using Azure Cloud Shell**
 
+With Cloud Shell, **kubectl** and **helm** are already installed. You need **Linkerd** at least
+
 You will need to rename the tools as kubectl(.exe), helm(.exe) and linkerd(.exe). If you are using cloudshell, kubectl and helm are already installed.  
 
 ### Azure resources
 
 For simplification, you can use North Europe to install your azure resources (Free Bastion with developper SKU)
 
-You can deploy everything directly with the ARM template or follow the manual instruction in each [specific containers documentation](.docs/)
+You can deploy everything directly with the ARM template or follow the manual instruction in each [specific containers documentation](./docs/)

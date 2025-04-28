@@ -117,13 +117,13 @@ az aks create --name $cluster_name --resource-group $rg_name --location $locatio
 az aks nodepool add -g $rg_name -n userai --cluster-name $cluster_name --enable-cluster-autoscaler --min-count 5 --max-count 8 --node-count 5 --node-vm-size Standard_D8s_v5 --vnet-subnet-id $subnetResourceId
 ```
 
-To retrieve credentials of your cluster use the az command. Those credentials are used for each tools (kubectl, helm, linkerd)
+## Software Installation
+
+**MANDATORY** : To retrieve credentials of your cluster use the az command. Those credentials are used for each tools (kubectl, helm, linkerd)
 
 ```bash
 az aks get-credentials --name $cluster_name -g $rg_name --admin --overwrite-existing
 ```
-
-## Software Installation
 
 ### Linkerd
 
@@ -293,3 +293,52 @@ And voilà ! No more error
 
 ## Troubleshooting
 
+### Pods
+
+Assume that the namespace is **di** :
+
+Verify that pods are deployed :
+
+```console
+kubectl get pods -n di
+```
+
+```console
+di-ai-document-intelligence-id-document-54799c5866-x5w2k   2/2     Running   0          112m
+di-ai-document-intelligence-invoice-85df9bf5f6-2g2sh       2/2     Running   0          112m
+di-ai-document-intelligence-layout-65dbc6d467-dppq2        2/2     Running   0          112m
+di-ai-document-intelligence-read-5f87d54f7c-vw782          2/2     Running   0          112m
+di-ai-document-intelligence-receipt-9499c67c9-k4jxp        2/2     Running   0          112m
+di-ai-document-intelligence-studio-5f45fbb674-fgnfd        2/2     Running   0          112m
+di-ingress-nginx-controller-75ccd67b94-w5445               2/2     Running   0          112m
+mini-oidc-568b975d44-tgj7l                                 2/2     Running   0          112m
+oauth2-proxy-7cfb559cd8-hb5f4                              2/2     Running   0          112m
+```
+
+Check that every pods are started correctly
+
+### Volumes
+
+Check that the volumes are created and mount :
+
+```console
+kubectl get pv
+kubectl get pvc -n di
+```
+
+```console
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                            STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-2bf79f0a-e887-41fe-a2d5-8d59413737c3   1Gi        RWX            Delete           Bound    di/di-ai-document-intelligence-studio-file       di-azurefile   <unset>                          112m
+pvc-69c77187-0b9d-4c41-b141-7c98c63dce08   1Gi        RWX            Delete           Bound    di/di-ai-document-intelligence-output            di-azurefile   <unset>                          112m
+pvc-c2a1dbaa-5dd4-4fca-8664-6d1870384c5d   1Gi        RWX            Delete           Bound    di/di-ai-document-intelligence-shared            di-azurefile   <unset>                          112m
+pvc-df5b9196-2504-40a0-998a-e28166863fa3   1Gi        RWX            Delete           Bound    di/di-ai-document-intelligence-studio-database   di-azurefile   <unset>                          112m
+```
+```console
+NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+di-ai-document-intelligence-output            Bound    pvc-69c77187-0b9d-4c41-b141-7c98c63dce08   1Gi        RWX            di-azurefile   <unset>                 113m
+di-ai-document-intelligence-shared            Bound    pvc-c2a1dbaa-5dd4-4fca-8664-6d1870384c5d   1Gi        RWX            di-azurefile   <unset>                 113m
+di-ai-document-intelligence-studio-database   Bound    pvc-df5b9196-2504-40a0-998a-e28166863fa3   1Gi        RWX            di-azurefile   <unset>                 113m
+di-ai-document-intelligence-studio-file       Bound    pvc-2bf79f0a-e887-41fe-a2d5-8d59413737c3   1Gi        RWX            di-azurefile   <unset>                 113m
+```
+
+Check that the volumes are bound and healthy

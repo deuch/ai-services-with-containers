@@ -1,6 +1,8 @@
 nameOverride: ""
 fullnameOverride: ""
 
+#Storage class for the Azure File Share
+#This is used for the Azure File Share for the Document Intelligence service
 storageClassName: "di-azurefile"
 
 documentIntelligence:
@@ -11,8 +13,8 @@ documentIntelligence:
 
 ingress:
   tlsSecret: tls-ingress-secret
-  tlsDomain: "aiservices.intra"
-  autoGenerate: true
+  tlsDomain: "aiservices.intra" #Domain of the Private DNS Zone
+  autoGenerate: true #Auto generation of the TLS certificate
   existingSecret: tls-ingress-secret
   existingSecretNamespace:
   maxPayloadSize: 32m
@@ -20,13 +22,15 @@ ingress:
 linkerd:
   injection: enabled
 
+#Installation of the ingress-nginx controller
+#This is used for the Private Load Balancer for the Document Intelligence service 
 ingress-nginx:
   enable: true
   controller:
     service:
       annotations:
         service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
-        service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+        service.beta.kubernetes.io/azure-load-balancer-internal: "true" #Private Load Balancer
 
 oauth2proxy:
   enable: true
@@ -49,6 +53,9 @@ oidc:
       cpu: 1
       memory: 1Gi
 
+#For each model, set enable to True or False
+#Each model provide limits and request for CPU and Memory
+#The default values are set to 8 CPU and 24 GiB Memory for limits and 4 CPU and 8 GiB Memory for requests
 customTemplate:
   enable: false
   image: mcr.microsoft.com/azure-cognitive-services/form-recognizer/custom-template-3.1:latest
