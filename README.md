@@ -44,7 +44,7 @@ The available charts are :
   - Invoice
   - Custom Template
 
-[Install](#tools) all the tools before and the go to [Document Intelligence : Installation guide](./docs/INSTALL_DOCINTEL.md)
+[Install](#tools) all the tools before and go to [Document Intelligence : Installation guide](./docs/INSTALL_DOCINTEL.md)
 
 **Stay Tuned** 
 
