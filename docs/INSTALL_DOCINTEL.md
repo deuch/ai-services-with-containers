@@ -1,6 +1,6 @@
-# AI Services containers on premise
+# Document Intelligence containers
 
-### Automatic installation
+### Automatic Infrastructure installation
 
 The magic button : 
 
@@ -8,7 +8,7 @@ The magic button :
 
 After deployment, go to  [Software installation](#software-installation) : 
 
-### Manual installation
+### Manual Infrastructure installation
 
 #### Resource group
 
