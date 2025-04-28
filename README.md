@@ -2,15 +2,30 @@
 
 ## Why ?
 
-
+Ai Services on containers from Azure are a way to use prebuilt model on premise without sending datas to Azure.
 
 ## How it works ?
 
 ### Components
 
+Containers are deployed in a Kubernetes cluster and this repo will help you to deploy them in a secure way.  
+By default you can not use HTTPS with certificate and no authentication is provided.  
+The user need to handle both of those security aspects.
+
 ### Architecture and related security
 
-What
+![Architecture](./img/architecture.png "Architecture")
+
+**Nginx** ingress controller will route the requests to the different backends [Nginx documentation](https://github.com/kubernetes/ingress-nginx)
+
+**Linkerd** provide transport security with MTLS between components. [Linkerd documentation](https://linkerd.io/)
+
+**Mini-oidc** provide authentication (OIDC/Oauth2) [minioidc documentation](https://github.com/fernandoescolar/minioidc)
+  - 2 users are created, one for API consumption and one for human user  
+
+**Oauth2-proxy** act as proxy to forward authentication to mini-oidc [OAuth2 Proxy documentation](https://oauth2-proxy.github.io/oauth2-proxy/)
+
+File share is used to share datas for asynchronous call or logging or License consumption
 
 ## Available charts
 
@@ -62,4 +77,4 @@ You will need to rename the tools as kubectl(.exe), helm(.exe) and linkerd(.exe)
 
 For simplification, you can use North Europe to install your azure resources (Free Bastion with developper SKU)
 
-You can deploy everything directly with the ARM template or follow the manual instruction.
+You can deploy everything directly with the ARM template or follow the manual instruction in each [specific containers documentation](.docs/)
