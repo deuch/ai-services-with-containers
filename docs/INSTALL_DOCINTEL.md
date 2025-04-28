@@ -6,7 +6,6 @@ The magic button :
 
 [![Deploy To Azure](../img/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdeuch%2Fai-services-with-containers%2Fmain%2Finfra%2Fdeployment.json)
 
-
 After deployment, go to  [Software installation](#software-installation) : 
 
 ### Manual installation
@@ -151,7 +150,7 @@ linkerd-proxy-injector-f9cf67fc4-4bdt6   2/2     Running   0          74s
 
 The helm template provide a lot of options in the values.yaml file.  
 A simple one, named custom-docintel-values.yaml will help you the setup everything.
-The custom values files are located in [Custom values directory](./charts/custom-values)
+The custom values files are located in [Custom values directory](../charts/custom-values)
 
 Basically you need to set those variables for the first installation of Document Intelligence : 
 
@@ -245,39 +244,51 @@ Certificates are not Trusted :
 ![Certificate is not Trusted](../img/install-certificate-01.png "Certificate is not Trusted")
 
 Check information about the certificate :  
+
 ![Retrieve the certificate](../img/install-certificate-02.png "Retrieve the certificate")
 
 Export the certificate :  
+
 ![Export the certificate](../img/install-certificate-03.png "Export the certficate")
 
 Choose PKCS 7 as format with **Certificate chain**  
+
 ![Save the certificate](../img/install-certificate-04.png "Save the certificate")
 
 Launch mmc  
+
 ![Run MMC](../img/install-certificate-05.png "Run MMC")
 
 Add a snap-in  
+
 ![Add a snap-in](./img/install-certificate-06.png "Add a snap-in")
 
 Choose Certificates and click "Add"  
+
 ![Add certificate snap-in](../img/install-certificate-07.png "Add certificate snap-in")
 
 Choose Computer Account  
+
 ![User computer account](../img/install-certificate-08.png "Use computer account")
 
 Choose the **Trusted Root Certificate Authorities** section to import  the certificate  
+
 ![Import the certificate](../img/install-certificate-09.png "Import the certificate")
 
 Choose the previously exported certificate  
+
 ![Choose your exported certificate](../img/install-certificate-10.png "Choose your exported certificate")
 
 Verify the certificate file  
+
 ![Verify the certificate file](../img/install-certificate-11.png "Verify the certificate file")
 
 Select Next to finalize import :  
+
 ![Select Next](../img/install-certificate-12.png "Select Next")
 
 And voilà ! No more error  
+
 ![No more error](../img/install-certificate-13.png "No more error")
 
 ## Troubleshooting

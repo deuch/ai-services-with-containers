@@ -16,6 +16,8 @@ The user need to handle both of those security aspects.
 
 ![Architecture](./img/architecture.png "Architecture")
 
+This is an example with Document Intelligence Containers.
+
 **Nginx** ingress controller will route the requests to the different backends [Nginx documentation](https://github.com/kubernetes/ingress-nginx)
 
 **Linkerd** provide transport security with MTLS between components. [Linkerd documentation](https://linkerd.io/)
@@ -42,7 +44,7 @@ The available charts are :
   - Invoice
   - Custom Template
 
-[Document Intelligence : Installation guide](./docs/INSTALL_DOCINTEL.md)
+[Install](#tools) all the tools before and the go to [Document Intelligence : Installation guide](./docs/INSTALL_DOCINTEL.md)
 
 **Stay Tuned** 
 
@@ -69,7 +71,7 @@ To install all of the component, you need to download some tools :
 [HELM](https://github.com/helm/helm/releases)  
 [LINKERD](https://github.com/linkerd/linkerd2/releases)  
 
-Those tools do not need installation, you can use them directly on the path, or add them to a standard path in your OS.
+Those tools do not need installation, you can use them directly on the path, or add them to a standard path in your OS. **Choose the right binary depending of your desktop or using Azure Cloud Shell**
 
 You will need to rename the tools as kubectl(.exe), helm(.exe) and linkerd(.exe). If you are using cloudshell, kubectl and helm are already installed.  
 
