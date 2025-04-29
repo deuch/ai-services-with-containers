@@ -11,6 +11,6 @@ data:
   CUSTOM_ENDPOINT: "https://{{ template "api.customtemplate.fqdn" .}}"
   OIDC_URL: "https://{{ template "oidc.fqdn" .}}/connect/token"
   SSL_VERIFY: "False"
-  OIDC_CLIENT_SCOPE: "openid email"
+  OIDC_CLIENT_SCOPE: "{{ .Values.oauth2proxy.scope }}"
   OIDC_CLIENT_AUDIENCE: "aiservices"
   
