@@ -9,4 +9,8 @@ data:
   RECEIPT_ENDPOINT: "https://{{ template "api.receipt.fqdn" .}}"
   IDDOCUMENT_ENDPOINT: "https://{{ template "api.id.fqdn" .}}"
   CUSTOM_ENDPOINT: "https://{{ template "api.customtemplate.fqdn" .}}"
-  SSL_VERIFY: "false"
+  OIDC_URL: "https://{{ template "oidc.fqdn" .}}/connect/token"
+  SSL_VERIFY: "False"
+  OIDC_CLIENT_SCOPE: "openid email"
+  OIDC_CLIENT_AUDIENCE: "aiservices"
+  

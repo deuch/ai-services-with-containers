@@ -373,16 +373,34 @@ kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | 
 
 ### Generate config for your python code
 
-in the [Tools](../tools) directory, you will find some scripts to help you to generate and retrieve all the informations of your deployment (assume **di** is your namespace as set by default): 
+In the [Tools](../tools) directory, you will find some scripts to help you to generate and retrieve all the informations of your deployment (assume **di** is your namespace as set by default): 
 
 **You need to have kubectl installed as the script will use it to retrieve all the informations**  
 
-**Only available for windows for now**
+**Only available for Windows for now**
 
 ```shell
 .\getconfig.ps1 di
 ```
 It will generate an *.env* file with all the informations you need to use with python for example.  
+
+#### Test python example script
+
+In the [sample directory](../python/docintel/) you can find a python sample code to run a layout extraction.
+
+You need to retrieve the *.env* file from the previous command and copy it in the same directory as the **layout.py* script.
+
+You need to install some python dependencies first :
+
+```powershell
+pip install -r requirements
+```
+
+And run the code :
+
+```powershell
+python3 layout.py 
+```
 
 ### Install certificates in the VM
 

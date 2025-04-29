@@ -19,7 +19,7 @@ $envContent = ""
 # Parcourir les données du secret et les décoder
 foreach ($key in $secretObject.data.PSObject.Properties.Name) {
   $value = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($secretObject.data.$key))
-  $envContent += "$key=$value`n"
+  $envContent += "$key=`"$value`"`n"
 }
 
 $configMapJson =  kubectl get cm $apiEndpointCm -n $namespace -o json 
@@ -27,7 +27,7 @@ $configMapObject = $configMapJson | ConvertFrom-Json
 
 foreach ($key in $configMapObject.data.PSObject.Properties.Name) {
   $value = $configMapObject.data.$key
-  $envContent += "$key=$value`n"
+  $envContent += "$key=`"$value`"`n"
 }
 
 # Sauvegarder le contenu dans le fichier .env
