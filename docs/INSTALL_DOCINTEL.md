@@ -228,8 +228,13 @@ You can change the document URL in the code :
 formUrl = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/sample-layout.pdf"
 ```
 
-### Install certificates in the VM
+## Install certificates in the VM
 
+<details>
+<summary>Follow the instructions</summary>
+  
+  
+  
 With auto generated certificates, your browser will show you some warnings about non trusted certificates. Follow this guide to install the certificates in your windows desktop :  
 
 Certificates are not Trusted :  
@@ -283,6 +288,8 @@ Select Next to finalize import :
 And voilà ! No more error  
 
 ![No more error](../img/install-certificate-13.png "No more error")
+
+</details>
 
 ## Troubleshooting
 
