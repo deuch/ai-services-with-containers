@@ -371,6 +371,9 @@ With Linux :
 kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | base64 -d
 ```
 
+When prompted in the UI to set your Document Intelligence resource, use the URL found above, the same your are using to connect to the studio.
+
+
 ### Generate config for your python code
 
 In the [Tools](../tools) directory, you will find some scripts to help you to generate and retrieve all the informations of your deployment (assume **di** is your namespace as set by default): 
