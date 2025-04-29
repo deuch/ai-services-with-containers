@@ -80,6 +80,6 @@ You will need to rename the tools as kubectl(.exe), helm(.exe) and linkerd(.exe)
 
 ### Azure resources
 
-For simplification, you can use North Europe to install your azure resources (Free Bastion with developper SKU)
+For simplification, you can use a region where [Bastion with developper SKU is available](https://learn.microsoft.com/en-us/azure/bastion/quickstart-developer) to install your azure resources (Free Bastion )
 
 You can deploy everything directly with the ARM template or follow the manual instructions in each [specific containers documentation](./docs/)
