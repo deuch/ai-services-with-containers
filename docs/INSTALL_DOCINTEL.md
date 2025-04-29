@@ -230,7 +230,11 @@ formUrl = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-RE
 
 ## Install certificates in the VM
 
-<details>
+<details>  
+  
+<summary> Click for details </summary>  
+  
+#
 
 With auto generated certificates, your browser will show you some warnings about non trusted certificates. Follow this guide to install the certificates in your windows desktop :  
 
