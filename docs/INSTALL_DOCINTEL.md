@@ -402,6 +402,13 @@ And run the code :
 python3 layout.py 
 ```
 
+You can change the document URL in the code : 
+
+```python
+# sample document
+formUrl = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-REST-api-samples/master/curl/form-recognizer/sample-layout.pdf"
+```
+
 ### Install certificates in the VM
 
 With auto generated certificates, your browser will show you some warnings about non trusted certificates. Follow this guide to install the certificates in your windows desktop :  
