@@ -2,7 +2,9 @@
 
 ## Why ?
 
-Ai Services on containers from Azure are a way to use prebuilt models on premise without sending datas to Azure.
+Ai Services on containers from Azure are a way to use prebuilt models on premise without sending datas to Azure.  
+Some Security aspects need to be handle like HTTPS and Authentication.
+This repo will help you to deploy ai services in container in a safe manner for demo purpose or inspiration for production usage.
 
 ## How it works ?
 
