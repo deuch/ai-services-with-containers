@@ -1,15 +1,17 @@
 # Document Intelligence containers
 
-### Automatic Infrastructure installation
+## Deploying the resources
 
-#### The magic button --> [![Deploy To Azure](../img/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdeuch%2Fai-services-with-containers%2Fmain%2Finfra%2Fdeployment.json)
+To deploy the required resources to Azure, it is just a one-click deployment.
 
-It will deploy :
-- A VNet with 3 subnets
-- An AKS cluster
+[![Deploy To Azure](../img/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdeuch%2Fai-services-with-containers%2Fmain%2Finfra%2Fdeployment.json)
+
+This will deploy the following resources:
+- Virtual network with 3 subnets
+- AKS cluster
 - 2 Private DNS Zones
-- 1 Document Intelligence instance with a Private Endpoint
-- 1 Windows VM (A developper bastion will be created)
+- Document Intelligence instance with a Private Endpoint
+- Windows VM (A developper bastion will be created)
 
 After deployment, go to [Software installation](#software-installation) section. 
 
@@ -147,7 +149,7 @@ mini-oidc                                     ClusterIP      10.4.0.86    <none>
 oauth2-proxy                                  ClusterIP      10.4.0.18    <none>        4180/TCP                     7m12s
 ```
 
-In this example, you need to use the external-ip of the Loadbalancer -> 10.0.0.12
+In this example, you need to use the external-ip of the Loadbalancer `10.0.0.12`
 
 Linux :
 

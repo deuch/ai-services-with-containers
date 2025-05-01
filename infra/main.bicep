@@ -125,64 +125,6 @@ resource cognitiveServicesDnsZoneLink 'Microsoft.Network/privateDnsZones/virtual
   }
 }
 
-// VM NIC
-resource nicVm 'Microsoft.Network/networkInterfaces@2021-05-01' = {
-  name: 'nic-vm'
-  location: resourceGroup().location
-  properties: {
-    ipConfigurations: [
-      {
-        name: 'ipconfig1'
-        properties: {
-          privateIPAllocationMethod: 'Dynamic'
-          subnet: {
-            id: vnet::subnetVms.id
-          }
-        }
-      }
-    ]
-  }
-}
-
-// Virtual Machine
-resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
-  name: 'vm-win11'
-  location: resourceGroup().location
-  properties: {
-    priority: 'Spot'
-    evictionPolicy: 'Deallocate'
-    billingProfile: {
-      maxPrice: -1
-    }
-    hardwareProfile: {
-      vmSize: 'Standard_D2ads_v5'
-    }
-    osProfile: {
-      computerName: 'vm-win11'
-      adminUsername: adminUsername
-      adminPassword: adminPassword
-    }
-    storageProfile: {
-      imageReference: {
-        publisher: 'MicrosoftWindowsDesktop'
-        offer: 'Windows-11'
-        sku: 'win11-24h2-pro'
-        version: 'latest'
-      }
-      osDisk: {
-        createOption: 'FromImage'
-      }
-    }
-    networkProfile: {
-      networkInterfaces: [
-        {
-          id: nicVm.id
-        }
-      ]
-    }
-  }
-}
-
 // Document Intelligence Service (Form Recognizer)
 resource docIntelligence 'Microsoft.CognitiveServices/accounts@2021-04-30' = {
   name: docIntelligenceName
@@ -290,5 +232,78 @@ resource aksNetworkContributorRole 'Microsoft.Authorization/roleAssignments@2022
     ) // Network Contributor role ID
     principalId: aksCluster.identity.principalId
     principalType: 'ServicePrincipal'
+  }
+}
+
+
+// VM NIC
+resource nicVm 'Microsoft.Network/networkInterfaces@2021-05-01' = {
+  name: 'nic-vm'
+  location: resourceGroup().location
+  properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          subnet: {
+            id: vnet::subnetVms.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+// Virtual Machine
+resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+  name: 'vm-win11'
+  location: resourceGroup().location
+  properties: {
+    priority: 'Spot'
+    evictionPolicy: 'Deallocate'
+    billingProfile: {
+      maxPrice: -1
+    }
+    hardwareProfile: {
+      vmSize: 'Standard_D2ads_v5'
+    }
+    osProfile: {
+      computerName: 'vm-win11'
+      adminUsername: adminUsername
+      adminPassword: adminPassword
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'MicrosoftWindowsDesktop'
+        offer: 'Windows-11'
+        sku: 'win11-24h2-pro'
+        version: 'latest'
+      }
+      osDisk: {
+        createOption: 'FromImage'
+      }
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: nicVm.id
+        }
+      ]
+    }
+  }
+}
+
+// Azure Bastion Host
+resource bastionHost 'Microsoft.Network/bastionHosts@2024-05-01' = {
+  name: 'bastion-host'
+  location: resourceGroup().location
+  sku: {
+    name: 'Developer'
+  }
+  properties: {
+    virtualNetwork: {
+      id: vnet.id
+    }
   }
 }
