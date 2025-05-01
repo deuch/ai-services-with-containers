@@ -14,6 +14,8 @@ This will deploy the following resources:
 - Document Intelligence instance with a Private Endpoint
 - Windows 11 VM and Bastion host using Developer SKU
 
+![](../img/azure-resources.png)
+
 After deployment, go to [Software installation](#software-installation) section. 
 
 ### Manual Infrastructure installation
@@ -229,10 +231,20 @@ In the [sample directory](../python/docintel/) you can find a python sample code
 
 You need to retrieve the *.env* file from the previous command and copy it in the same directory as the **layout.py* script.
 
-You need to install some python dependencies first :
+The python app needs to run from within the Azure VM to get access to the `Document Intelligence API` hosted in the AKS cluster.
+
+You will need to have vscode, python and git installed in your VM. You can use the `winget` package manager to install everything.
+
+```sh
+winget install -e --id Microsoft.VisualStudioCode
+winget install -e --id Python.Python.3.12
+winget install -e --id Git.Git
+```
+
+You need to install the python dependencies first :
 
 ```powershell
-pip install -r requirements
+pip install -r requirements.txt
 ```
 
 And run the code :
