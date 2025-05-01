@@ -84,7 +84,8 @@ studio:
   enable: true
 ```
 
-With Default values, this is what it will be installed/created : 
+With Default values, this is what it will be installed/created :
+
 - Ingress NGINX Controller is installed
   - TLS certificates are automatically generated and set for NGINX (full HTTPS)
 - mini-oidc
@@ -103,17 +104,27 @@ More complex configuration can be done if you decide to use the same cluster wit
 
 **You need to have the endpoint and the apiKey of your AI Resources.**
 
-Let now install the Document Intelligence Helm chart :
+Let's now install the Document Intelligence Helm chart :
 
 1) **Go to the charts directory**
+
 2) In the below command, set :
+
   - *documentIntelligence.secret.apiKeyValue* with your apiKey
+
   - *documentIntelligence.secret.endpointValue* with your Document Intelligence endpoint
+
 3) Everything will be installed in the **di** namespace
 
 ```bash
 helm install di .\ai-document-intelligence -f .\custom-values\custom-docintel-values.yaml -n di --create-namespace --set documentIntelligence.secret.apiKeyValue="XXXXXXXXXXXXXXXX",documentIntelligence.secret.endpointValue="https://mydocintelinstance.cognitiveservices.azure.com/"
 ```
+
+<details>
+<summary>**How to get the Key and Endpoint ?**</summary>
+You can get the API Key and Endpoint for Doc Intelligence from the Azure Portal. Go to your Document Intelligence resource and click on **Keys and Endpoint**. You will find the API Key and the endpoint URL.
+![](../img/doc-intell-key-endpoint.png)
+</details>
 
 ### Private DNS Zone A Record
 
