@@ -144,6 +144,7 @@ resource peDocIntelligence 'Microsoft.Network/privateEndpoints@2021-05-01' = {
   name: 'pe-docIntelligence'
   location: resourceGroup().location
   properties: {
+    customNetworkInterfaceName: 'nic-pe-docIntelligence'
     subnet: {
       id: vnet::subnetPe.id
     }
@@ -281,6 +282,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2021-07-01' = {
         version: 'latest'
       }
       osDisk: {
+        name: 'osdisk-vm-win11'
         createOption: 'FromImage'
       }
     }
