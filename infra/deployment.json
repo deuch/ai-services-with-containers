@@ -69,7 +69,7 @@
       "location": "[resourceGroup().location]",
       "properties": {
         "addressSpace": {
-          "addressPrefixes": ["[parameters('vnetAddressSpace')]"]
+          "addressPrefixes": [ "[parameters('vnetAddressSpace')]" ]
         },
         "subnets": [
           {
@@ -143,7 +143,7 @@
       "apiVersion": "2021-07-01",
       "name": "vm1",
       "location": "[resourceGroup().location]",
-       "dependsOn": [
+      "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces', 'vm1-nic')]"
       ],
@@ -209,7 +209,7 @@
       "kind": "FormRecognizer",
       "properties": {
         "publicNetworkAccess": "Disabled",
-        "customSubDomainName" : "[parameters('docIntelligenceName')]"
+        "customSubDomainName": "[parameters('docIntelligenceName')]"
       }
     },
     {
@@ -231,7 +231,7 @@
             "name": "docIntelligenceConnection",
             "properties": {
               "privateLinkServiceId": "[resourceId('Microsoft.CognitiveServices/accounts', parameters('docIntelligenceName'))]",
-              "groupIds": ["account"]
+              "groupIds": [ "account" ]
             }
           }
         ]
@@ -264,7 +264,7 @@
       "identity": {
         "type": "SystemAssigned"
       },
-    
+
       "properties": {
         "dnsPrefix": "aksdns",
         "networkProfile": {
@@ -297,7 +297,7 @@
             "vnetSubnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'aks')]"
           }
         ],
-         "servicePrincipalProfile": {
+        "servicePrincipalProfile": {
           "clientId": "msi"
         }
       }
@@ -315,8 +315,20 @@
         "principalId": "[reference(resourceId('Microsoft.ContainerService/managedClusters', parameters('aksClusterName')), '2023-08-01', 'Full').identity.principalId]",
         "principalType": "ServicePrincipal"
       }
+    },
+    {
+      "type": "Microsoft.Network/bastionHosts",
+      "apiVersion": "2024-05-01",
+      "name": "bastionHost",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Developer"
+      },
+      "properties": {
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        }
+      }
     }
   ]
 }
-
-
