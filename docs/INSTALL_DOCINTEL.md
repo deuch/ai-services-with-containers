@@ -203,6 +203,10 @@ kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | 
 
 When prompted in the UI to set your Document Intelligence resource, use the URL found above (in our case it is `docintel.aiservices.intra`), the same your are using to connect to the studio.
 
+You can try to scan a sample document or upload your own document.
+
+![Document Intelligence Studio](../img/doc-intell-studio.png "Document Intelligence Studio")
+
 ## Running the Document Intelligence API using Python application
 
 ### Generate config for your python code
