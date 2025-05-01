@@ -121,9 +121,10 @@ helm install di .\ai-document-intelligence -f .\custom-values\custom-docintel-va
 ```
 
 <details>
-<summary>**How to get the Key and Endpoint ?**</summary>
+<summary>How to get the Key and Endpoint ?</summary>
 You can get the API Key and Endpoint for Doc Intelligence from the Azure Portal. Go to your Document Intelligence resource and click on **Keys and Endpoint**. You will find the API Key and the endpoint URL.
-![](../img/doc-intell-key-endpoint.png)
+
+<image src="../img/doc-intell-key-endpoint.png" alt="Document Intelligence Key and Endpoint" width="600px" />
 </details>
 
 ### Private DNS Zone A Record
