@@ -7,11 +7,12 @@ To deploy the required resources to Azure, it is just a one-click deployment.
 [![Deploy To Azure](../img/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdeuch%2Fai-services-with-containers%2Fmain%2Finfra%2Fdeployment.json)
 
 This will deploy the following resources:
+
 - Virtual network with 3 subnets
 - AKS cluster
 - 2 Private DNS Zones
 - Document Intelligence instance with a Private Endpoint
-- Windows VM (A developper bastion will be created)
+- Windows 11 VM and Bastion host using Developer SKU
 
 After deployment, go to [Software installation](#software-installation) section. 
 
@@ -21,29 +22,32 @@ You can use Cloud Shell for manual installation. The command are linux oriented.
 
 After deployment, continue with the software installation below.
 
-## Software Installation
+## Software install
 
 **MANDATORY** : To retrieve credentials of your cluster use the az command. Those credentials are used for each tools (kubectl, helm, linkerd)
 
-```bash
+```sh
 az aks get-credentials --name $cluster_name -g $rg_name --admin --overwrite-existing
 ```
 
-### Linkerd
+### Installing Linkerd
 
-To install linkerd, just use those 2 commands :
+To install `linkerd`, just use those 2 commands :
 
-```bash
+```sh
 linkerd install --crds --set installGatewayAPI=true| kubectl apply -f -
 linkerd install | kubectl apply -f -
 ```
+
 Check that the installation is finished with kubectl command :
-```bash
+
+```sh
 kubectl get pods -n linkerd
 ```
+
 It must look like :
 
-```console
+```sh
 NAME                                     READY   STATUS    RESTARTS   AGE
 linkerd-destination-8fcc4d755-rw7dw      4/4     Running   0          75s
 linkerd-identity-5bf6f985f8-ntnvx        2/2     Running   0          75s
@@ -52,8 +56,8 @@ linkerd-proxy-injector-f9cf67fc4-4bdt6   2/2     Running   0          74s
 
 ### Helm template configuration
 
-The helm template provide a lot of options in the values.yaml file.  
-A simple one, named custom-docintel-values.yaml will help you the setup everything.
+The helm template provide a lot of options in the `values.yaml` file.  
+A simple one, named `custom-docintel-values.yaml` will help you the setup everything.
 The custom values files are located in [Custom values directory](../charts/custom-values)
 
 Basically you need to set those variables for the first installation of Document Intelligence : 
@@ -104,7 +108,14 @@ More complex configuration can be done if you decide to use the same cluster wit
 
 ### Helm installation
 
-**You need to have the endpoint and the apiKey of your AI Resources.**
+You need to have the endpoint and the apiKey of your AI Resources.
+
+<details>
+<summary>How to get the Key and Endpoint ?</summary>
+You can get the API Key and Endpoint for Doc Intelligence from the Azure Portal. Go to your Document Intelligence resource and click on **Keys and Endpoint**. You will find the API Key and the endpoint URL.
+
+<image src="../img/doc-intell-key-endpoint.png" alt="Document Intelligence Key and Endpoint" width="600px" />
+</details>
 
 Let's now install the Document Intelligence Helm chart :
 
@@ -122,31 +133,25 @@ Let's now install the Document Intelligence Helm chart :
 helm install di .\ai-document-intelligence -f .\custom-values\custom-docintel-values.yaml -n di --create-namespace --set documentIntelligence.secret.apiKeyValue="XXXXXXXXXXXXXXXX",documentIntelligence.secret.endpointValue="https://mydocintelinstance.cognitiveservices.azure.com/"
 ```
 
-<details>
-<summary>How to get the Key and Endpoint ?</summary>
-You can get the API Key and Endpoint for Doc Intelligence from the Azure Portal. Go to your Document Intelligence resource and click on **Keys and Endpoint**. You will find the API Key and the endpoint URL.
-
-<image src="../img/doc-intell-key-endpoint.png" alt="Document Intelligence Key and Endpoint" width="600px" />
-</details>
-
-### Private DNS Zone A Record
+### Creating Private DNS Zone A Record
 
 **You need to add a record in your Private DNS Zone. Unless, you will not be able to use your VM and reach the studio.**  
 
-Retrieve the private IP of the Load Balancer :
+Retrieve the private IP of the `Load Balancer` created by the ingress NGINX controller.
 
-```console
-NAME                                          TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)                      AGE
-di-ai-document-intelligence-custom-template   ClusterIP      10.4.0.124   <none>        5000/TCP                     7m12s
-di-ai-document-intelligence-id-document       ClusterIP      10.4.0.21    <none>        5050/TCP                     7m12s
-di-ai-document-intelligence-layout            ClusterIP      10.4.0.233   <none>        5000/TCP                     7m12s
-di-ai-document-intelligence-read              ClusterIP      10.4.0.253   <none>        5000/TCP                     7m12s
-di-ai-document-intelligence-receipt           ClusterIP      10.4.0.159   <none>        5050/TCP                     7m12s
-di-ai-document-intelligence-studio            ClusterIP      10.4.0.67    <none>        5001/TCP                     7m12s
-di-ingress-nginx-controller                   LoadBalancer   10.4.0.82    10.0.0.12     80:31590/TCP,443:30690/TCP   7m12s
-di-ingress-nginx-controller-admission         ClusterIP      10.4.0.134   <none>        443/TCP                      7m12s
-mini-oidc                                     ClusterIP      10.4.0.86    <none>        8000/TCP                     7m12s
-oauth2-proxy                                  ClusterIP      10.4.0.18    <none>        4180/TCP                     7m12s
+```sh
+kubectl get svc -n di
+# NAME                                          TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)                      AGE
+# di-ai-document-intelligence-custom-template   ClusterIP      10.4.0.124   <none>        5000/TCP                     7m12s
+# di-ai-document-intelligence-id-document       ClusterIP      10.4.0.21    <none>        5050/TCP                     7m12s
+# di-ai-document-intelligence-layout            ClusterIP      10.4.0.233   <none>        5000/TCP                     7m12s
+# di-ai-document-intelligence-read              ClusterIP      10.4.0.253   <none>        5000/TCP                     7m12s
+# di-ai-document-intelligence-receipt           ClusterIP      10.4.0.159   <none>        5050/TCP                     7m12s
+# di-ai-document-intelligence-studio            ClusterIP      10.4.0.67    <none>        5001/TCP                     7m12s
+# di-ingress-nginx-controller                   LoadBalancer   10.4.0.82    10.0.0.12     80:31590/TCP,443:30690/TCP   7m12s
+# di-ingress-nginx-controller-admission         ClusterIP      10.4.0.134   <none>        443/TCP                      7m12s
+# mini-oidc                                     ClusterIP      10.4.0.86    <none>        8000/TCP                     7m12s
+# oauth2-proxy                                  ClusterIP      10.4.0.18    <none>        4180/TCP                     7m12s
 ```
 
 In this example, you need to use the external-ip of the Loadbalancer `10.0.0.12`
@@ -174,13 +179,13 @@ The FQDN is returned after the helm installation.
 
 To retrieve it : 
 
-```console
+```sh
 kubectl get ing -n di
 ```
 
 Check the HOSTS associated to the studio ingress :  
 
-```console
+```sh
 NAME                                      CLASS   HOSTS                                                    ADDRESS     PORTS     AGE
 di-ai-document-intelligence-studio        nginx   docintel.aiservices.intra                                10.0.0.12   80, 443   6m26s
 ```
@@ -247,8 +252,6 @@ formUrl = "https://raw.githubusercontent.com/Azure-Samples/cognitive-services-RE
 <details>  
   
 <summary> Click for details </summary>  
-  
-#
 
 With auto generated certificates, your browser will show you some warnings about non trusted certificates. Follow this guide to install the certificates in your windows desktop :  
 
@@ -348,6 +351,7 @@ pvc-69c77187-0b9d-4c41-b141-7c98c63dce08   1Gi        RWX            Delete     
 pvc-c2a1dbaa-5dd4-4fca-8664-6d1870384c5d   1Gi        RWX            Delete           Bound    di/di-ai-document-intelligence-shared            di-azurefile   <unset>                          112m
 pvc-df5b9196-2504-40a0-998a-e28166863fa3   1Gi        RWX            Delete           Bound    di/di-ai-document-intelligence-studio-database   di-azurefile   <unset>                          112m
 ```
+
 ```console
 NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 di-ai-document-intelligence-output            Bound    pvc-69c77187-0b9d-4c41-b141-7c98c63dce08   1Gi        RWX            di-azurefile   <unset>                 113m
@@ -356,4 +360,4 @@ di-ai-document-intelligence-studio-database   Bound    pvc-df5b9196-2504-40a0-99
 di-ai-document-intelligence-studio-file       Bound    pvc-2bf79f0a-e887-41fe-a2d5-8d59413737c3   1Gi        RWX            di-azurefile   <unset>                 113m
 ```
 
-Check that the volumes are bound and healthy
+Check that the volumes are bound and healthy.
