@@ -154,47 +154,42 @@ kubectl get svc -n di
 # oauth2-proxy                                  ClusterIP      10.4.0.18    <none>        4180/TCP                     7m12s
 ```
 
-In this example, you need to use the external-ip of the Loadbalancer `10.0.0.12`
+In this example, you need to use the `external-ip` of the `Loadbalancer` which is `10.0.0.12`.
 
-Linux :
-
-```bash
+```sh
 private_ip="10.0.0.12"
+# $private_ip="10.0.0.12" # if using windows
 az network private-dns record-set a add-record -g $rg_name -z $domain -n "*" -a $private_ip
 ```
 
-Windows :
+You can add the record directly in the portal too. Use "*" as name and the IP of the load balancer.
 
-```powershell
-$private_ip="10.0.0.12"
-az network private-dns record-set a add-record -g $rg_name -z $domain -n "*" -a $private_ip
-```
+![](img/dns-record.png)
 
-You can add the record directly in the portal too. Use "*" as name and the IP of the load balancer.  
+## Connecting to the doc intelligence studio
 
-### Connect to the studio
+To connect to the Document Intelligence Studio, you need to reach the virtual network of the service.
+For that, you will use the Azure VM as a Jumpbox machine accessed by `Bastion`.
+From your VM, select `Connect via Bastion` in the portal. This will open a browser session to your VM. Use your VM user name and password to connect.
 
 In your VM, use a browser and reach the FQDN of your studio deployment.
 The FQDN is returned after the helm installation.  
 
-To retrieve it : 
+To retrieve it, check the services and the HOSTS associated to the studio ingress. 
 
 ```sh
-kubectl get ing -n di
+kubectl get ingress -n di
+# NAME                                      CLASS   HOSTS                                                    ADDRESS     PORTS     AGE
+# di-ai-document-intelligence-studio        nginx   docintel.aiservices.intra                                10.0.0.12   80, 443   6m26s
 ```
 
-Check the HOSTS associated to the studio ingress :  
-
-```sh
-NAME                                      CLASS   HOSTS                                                    ADDRESS     PORTS     AGE
-di-ai-document-intelligence-studio        nginx   docintel.aiservices.intra                                10.0.0.12   80, 443   6m26s
-```
+In this case it is `docintel.aiservices.intra`.
 
 To login to the studio, use :
   - Username : user
   - Password : the OIDC_USER_SECRET
 
-To retrieve it with Windows :
+To retrieve the password with Windows :
 
 ```powershell
 kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | %{[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($_))}
@@ -206,8 +201,9 @@ With Linux :
 kubectl get secrets -n di -o jsonpath="{.data.OIDC_USER_SECRET}" oidc-secrets | base64 -d
 ```
 
-When prompted in the UI to set your Document Intelligence resource, use the URL found above, the same your are using to connect to the studio.
+When prompted in the UI to set your Document Intelligence resource, use the URL found above (in our case it is `docintel.aiservices.intra`), the same your are using to connect to the studio.
 
+## Running the Document Intelligence API using Python application
 
 ### Generate config for your python code
 
@@ -220,6 +216,7 @@ In the [Tools](../tools) directory, you will find some scripts to help you to ge
 ```shell
 .\getconfig.ps1 di
 ```
+
 It will generate an *.env* file with all the informations you need to use with python for example.  
 
 #### Test python example script
